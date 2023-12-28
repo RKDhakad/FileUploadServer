@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Admin Panel</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Welcome to the Admin Panel</h2>
+        <div class="qrcode-container">
+            <h3>Upload Page QR Code</h3>
+            <img src="{{ url_for('generate_qr_code') }}" alt="Upload Page QR Code">
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>File Upload Page</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>File Upload Page</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="file" class="file-label">
+                <span>Choose files</span>
+                <img src="{{ url_for('static', filename='uploadbtn.svg') }}" alt="" style="width: 50px; height: 50px;">
+            </label>
+            <input type="file" id="file" name="file" multiple required>
+            <progress id="uploadProgress" max="100" value="0" style="display: none;"></progress>
+            <div id="selectedFilesContainer"></div>
+            <div id="uploadSpeedContainer"></div>
+            <button type="button" onclick="uploadFiles()">Upload</button>
+        </form>
+    </div>
+
+    <script>
+        var startTime;
+
+        // Function to update selected file names and show progress bar
+        function updateSelectedFiles() {
+            var filesInput = document.getElementById("file");
+            var filesContainer = document.getElementById("selectedFilesContainer");
+            var progress = document.getElementById("uploadProgress");
+            var speedContainer = document.getElementById("uploadSpeedContainer");
+
+            // Clear previous file names
+            filesContainer.innerHTML = '';
+
+            // Display the names of selected files
+            for (var i = 0; i < filesInput.files.length; i++) {
+                var fileName = filesInput.files[i].name;
+                var fileElement = document.createElement('div');
+                fileElement.textContent = fileName;
+                filesContainer.appendChild(fileElement);
+            }
+
+            // Show the progress bar
+            progress.style.display = 'block';
+
+            // Reset start time
+            startTime = new Date().getTime();
+        }
+
+        // Attach the updateSelectedFiles function to the change event of the file input
+        document.getElementById("file").addEventListener("change", updateSelectedFiles);
+
+        // Function to handle file upload
+        function uploadFiles() {
+            var formData = new FormData(document.getElementById("uploadForm"));
+
+            var xhr = new XMLHttpRequest();
+
+            // Update progress bar and upload speed
+            xhr.upload.addEventListener("progress", function (e) {
+                if (e.lengthComputable) {
+                    var currentTime = new Date().getTime();
+                    var elapsedMilliseconds = currentTime - startTime;
+                    var elapsedSeconds = elapsedMilliseconds / 1000;
+                    var uploadSpeed = e.loaded / elapsedSeconds; // Bytes per second
+
+                    document.getElementById("uploadProgress").value = (e.loaded / e.total) * 100;
+                    document.getElementById("uploadSpeedContainer").textContent = "Upload Speed: " + formatBytes(uploadSpeed) + "/s";
+                }
+            });
+
+            // Handle successful upload
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    alert("Files uploaded successfully");
+                    // Reload the page
+                    location.reload();
+                } else {
+                    alert("Error uploading files");
+                }
+            };
+
+            // Handle upload errors
+            xhr.onerror = function () {
+                alert("Error uploading files");
+            };
+
+            // Open and send the request
+            xhr.open("POST", "/upload", true);
+            xhr.send(formData);
+        }
+
+        // Function to format bytes into a human-readable format
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+
+</html>
